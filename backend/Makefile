@@ -1,19 +1,9 @@
-
 export PYTHONPATH := $(PWD)
-
-
 
 .PHONY: test test-cov
 
-
-
 test:
-
-    pytest -v
-
-
+	pytest -v
 
 test-cov:
-
-    pytest --cov=blog --cov-report=missing -v
-
+	pytest --cov=petfit --cov-report=term-missing -v

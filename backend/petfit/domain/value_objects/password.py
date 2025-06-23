@@ -23,11 +23,9 @@ class Password:
 
 
     def __eq__(self, other) -> bool:
-
         return isinstance(other, Password) and self._value == other._value
 
 
 
     def __str__(self) -> str:
-
         return "*" * len(self._value)

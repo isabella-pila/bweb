@@ -1,7 +1,7 @@
 import pytest
-from blog.domain.values_objects.email_vo import Email
-from blog.domain.values_objects.password import Password
-from blog.domain.entities.user import User
+from petfit.domain.values_objects.email_vo import Email
+from petfit.domain.values_objects.password import Password
+from petfit.domain.entities.user import User
 
 
 def test_create_user():

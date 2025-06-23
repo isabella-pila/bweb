@@ -33,7 +33,17 @@
   
       "ms-python.vscode-pylance",
   
-      "ms-vscode.makefile-tools"
+      "ms-vscode.makefile-tools",
+
+      "ms-python.black-formatter",
+
+      "spywhere.guides",
+
+      "sandipchitale.vscode-indent-line",
+
+      "visualstudioexptteam.vscodeintellicode",
+
+      "christian-kohler.path-intellisense"
   
     ]
   
