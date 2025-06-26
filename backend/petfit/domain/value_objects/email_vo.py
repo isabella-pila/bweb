@@ -1,12 +1,10 @@
 import re 
 
 class Email:
-    def __init__(self,value):
+    def __init__(self, value: str):
         if not self._is_valid(value):
             raise ValueError("e-mail inválido")
         self._value = value
-
-
 
     def _is_valid(self, email: str) -> bool:
 

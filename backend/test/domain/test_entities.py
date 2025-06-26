@@ -18,7 +18,8 @@ def test_recipe_creation():
         title="Bolo de Cenoura",
         ingredients="cenoura, ovos, farinha de aveia",
         instructions="Misture tudo e asse por 40 minutos.",
-        img_url="http://exemplo.com/bolo.jpg"
+        img_url="http://exemplo.com/bolo.jpg",
+        category="gato"
     )
 
     assert recipe.id == "1"
@@ -26,6 +27,7 @@ def test_recipe_creation():
     assert recipe.ingredients == "cenoura, ovos, farinha de aveia"
     assert recipe.instructions == "Misture tudo e asse por 40 minutos."
     assert recipe.img_url == "http://exemplo.com/bolo.jpg"
+    assert recipe.category == "gato"
 
 
 

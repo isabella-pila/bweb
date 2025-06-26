@@ -1,5 +1,5 @@
-from petfit.domain.values_objects.email_vo import Email
-from petfit.domain.values_objects.password import Password
+from petfit.domain.value_objects.email_vo import Email
+from petfit.domain.value_objects.password import Password
 
 class  User:
     def __init__(self,id: str, name: str, email: Email, password: Password):

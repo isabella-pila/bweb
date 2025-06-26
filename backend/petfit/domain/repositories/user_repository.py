@@ -22,3 +22,7 @@ class UserRepository(ABC):
     @abstractmethod
     def user_logout(self) -> None:
         pass
+
+    @abstractmethod
+    def update(self, user: User) -> None:
+        pass
