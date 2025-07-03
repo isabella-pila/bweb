@@ -3,7 +3,7 @@ from petfit.domain.entities.recipe import Recipe
 from typing import List, Optional
 
 
-class InMemoryPostRepository(RecipeRepository):
+class InMemoryRecipeRepository(RecipeRepository):
     def __init__(self):
         self._recipes = {}
 

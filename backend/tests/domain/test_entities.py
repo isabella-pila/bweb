@@ -7,12 +7,14 @@ from petfit.domain.entities.rating import Rating
 
 def test_create_user():
     email = Email("user@example.com")
-    pwd = Password("Secret123")
-    user = User("1", "User", email, pwd, "user")
+    pwd = Password("Secret123!")
+    user = User("1", "User", email, pwd)
+    assert user.id == "1"
     assert user.name == "User"
+    assert user.email == email
+    assert user.password == pwd
 
-
-def test_recipe_creation():
+def test_recipe_creation_all_fields():
     recipe = Recipe(
         id="1",
         title="Bolo de Cenoura",
@@ -21,31 +23,26 @@ def test_recipe_creation():
         img_url="http://exemplo.com/bolo.jpg",
         category="gato"
     )
-
     assert recipe.id == "1"
     assert recipe.title == "Bolo de Cenoura"
     assert recipe.ingredients == "cenoura, ovos, farinha de aveia"
     assert recipe.instructions == "Misture tudo e asse por 40 minutos."
-    assert recipe.img_url == "http://exemplo.com/bolo.jpg"
     assert recipe.category == "gato"
 
-
-
 def test_rating_creation():
-    user = User(id="u123", name="Alice", email="alice@example.com")
+    email = Email("alice@example.com")
+    pwd = Password("Secret123!")
+    user = User("u123", "Alice", email, pwd)
     recipe = Recipe(
         id="r456",
         title="Ração caseira",
         ingredients="frango, arroz, legumes",
         instructions="Cozinhe tudo e sirva morno.",
-        img_url="http://example.com/receita.jpg"
+        img_url="http://example.com/receita.jpg",
+        category="cachorro"
     )
-    rating = Rating(id="rat789", user_id=user, recipe_id=recipe, value=5)
-
-    assert rating.id == "rat789"
+    rating = Rating("rat1", user, recipe, 5)
+    assert rating.id == "rat1"
     assert rating.user_id == user
     assert rating.recipe_id == recipe
     assert rating.value == 5
-
-
-    
