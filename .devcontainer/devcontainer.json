@@ -1,7 +1,7 @@
 {
   "name": "Petfit API Dev",
   "dockerComposeFile": "../docker-compose.yml",
-  "service": "Petfit",
+  "service": "petfit",
   "workspaceFolder": "/home/devuser/app",
   "remoteUser": "devuser",
   "forwardPorts": [

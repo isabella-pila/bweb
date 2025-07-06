@@ -17,7 +17,6 @@ def create_test_user() -> User:
         name="Test User",
         email=Email("test@example.com"),
         password=Password("secur3@Pass"),
-        role="user",
     )
 
 
@@ -99,6 +98,8 @@ def test_update_user():
     updated = User(
         id=user.id,
         name="pila",
+        email=user.email,       # <--- Adicionado
+        password=user.password         # <--- Adicionado (se 'role' for obrigatório)
     )
 
     usecase = UpdateUserUseCase(repo)

@@ -1,22 +1,26 @@
 from abc import ABC, abstractmethod
 from petfit.domain.entities.user import User
+from petfit.domain.value_objects.email_vo import Email      # ADICIONADO: para tipagem correta no login
+from petfit.domain.value_objects.password import Password  # ADICIONADO: para tipagem correta no login
 from typing import Optional
 
 class UserRepository(ABC):
     @abstractmethod
-    def login(self,email:str,password:str) -> User:
+    # Retorno Optional[User] e tipos Email/Password para consistência com InMemory
+    def login(self, email: Email, password: Password) -> Optional[User]:
         pass
 
     @abstractmethod
-    def register(self, user: User) -> None:
+    # Retorno User para consistência com InMemory
+    def register(self, user: User) -> User:
         pass
 
     @abstractmethod
-    def get_current_user(self) -> Optional[User]: # pode ser user ou pode ser que venha none
+    def get_current_user(self) -> Optional[User]:
         pass
 
     @abstractmethod
-    def set_current_user(self,user:User) -> None:
+    def set_current_user(self, user: User) -> None:
         pass
 
     @abstractmethod
@@ -24,5 +28,11 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def update(self, user: User) -> None:
+    # Retorno Optional[User] para consistência com InMemory
+    def update(self, user: User) -> Optional[User]:
+        pass
+
+    @abstractmethod
+    # NOVO MÉTODO: Adicionado para ser implementado pelo InMemoryUserRepository e usado nos testes
+    def get_by_id(self, user_id: str) -> Optional[User]:
         pass

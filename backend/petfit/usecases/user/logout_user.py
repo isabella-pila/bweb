@@ -6,4 +6,4 @@ class LogoutUserUseCase:
         self.repository = repository
 
     def execute(self) -> None:
-        self.repository.logout()
+        self.repository.user_logout()
