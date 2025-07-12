@@ -47,7 +47,6 @@ async def register_user(
             name=data.name,
             email=Email(data.email),
             password=Password(data.password),
-            role=data.role,
         )
         result = await usecase.execute(user)
         return MessageUserResponse(
