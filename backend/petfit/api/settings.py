@@ -1,30 +1,39 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import ClassVar
 
 
 class Settings(BaseSettings):
-    postgres_user: str
-    postgres_password: str
-    postgres_db: str
-    postgres_port: int
-    postgres_host: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_PORT: int
+    POSTGRES_HOST: str
 
-    docker_env: int  # 1 para Docker, 0 fora
+    DOCKER_ENV: int  # 1 para Docker, 0 fora
 
-    database_url: str  # asyncpg para FastAPI
-    database_url_alembic: str  # psycopg2 para Alembic
+    DATABASE_URL: str  # asyncpg para FastAPI
+    DATABASE_URL_ALEMBIC: str  # psycopg2 para Alembic
+    DATABASE_URL_TEST: str
 
-    pgadmin_default_email: str
-    pgadmin_default_password: str
-    pgadmin_port: int
+    # PGADMIN_DEFAULT_EMAIL: str
+    # PGADMIN_DEFAULT_PASSWORD: str
+    # PGADMIN_PORT: int
 
-    secret_key: str
-    algorithm: str
-    access_token_expire_minutes: int
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
 
-    class Config:
-        env_file = ".env"
-        extra = "forbid"
+    # env_file = ".env"
+    # extra = "forbid"
+    # model_config = {
+    #     "env_file": ".env",
+    #     "extra": "ignore"
+    # }
+
+    model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
+        env_file=".env", extra="ignore"
+    )
 
 
 settings = Settings()

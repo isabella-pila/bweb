@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from petfit.domain.entities.user import User
-from petfit.domain.entities.user_public import UserPublic
 from petfit.domain.repositories.user_repository import UserRepository
 from petfit.domain.value_objects.email_vo import Email
 from petfit.domain.value_objects.password import Password
@@ -15,31 +14,57 @@ from petfit.infra.database import async_session
 class SQLAlchemyUserRepository(UserRepository):
     def __init__(self, session: AsyncSession):
         self._session = session
-        self._current_user: Optional[UserPublic] = None # Opcional: mude para UserPublic se current_user for sem senha
+        self._current_user: Optional[User] = None
 
-    async def register(self, user: User) -> UserPublic: # <-- ALtere o tipo de retorno para UserPublic
+    async def register(self, user: User) -> User:
         model = UserModel.from_entity(user)
         self._session.add(model)
         await self._session.commit()
-        await self._session.refresh(model) # O modelo agora está atualizado com o ID do banco, etc.
-        return model.to_entity() # Isso AGORA retornará um UserPublic (sem senha)
+        await self._session.refresh(model)
+        user.id = model.id
+        return model.to_entity()
 
-    # ... (Seu método login também precisará ser ajustado para retornar UserPublic ou User conforme seu design)
-    async def login(self, email: Email, password: Password) -> Optional[UserPublic]: # Exemplo: Retorne UserPublic
+    async def login(self, email: Email, password: Password) -> Optional[User]:
+        stmt = select(UserModel).where(UserModel.email == str(email))
+        result = await self._session.execute(stmt)
+        user = result.scalar_one_or_none()
+
+        if user and password.verify(user.password):
+            self._current_user = user.to_entity()
+            return self._current_user
+        return None
+
+    async def get_current_user(self) -> Optional[User]:
+        if self._current_user is None:
+            raise ValueError("Current user is not set. Please log in first.")
+        stmt = select(UserModel).where(UserModel.id == str(self._current_user.id))
+        result = await self._session.execute(stmt)
+        user = result.scalar_one_or_none()
+        if user:
+            self._current_user = user.to_entity()
+        else:
+            self._current_user = None
+        return self._current_user
+
+    async def set_current_user(self, user: User) -> None:
+        self._current_user = user
+
+    async def user_logout(self) -> None:
+        self._current_user = None
+
+    async def get_by_email(self, email: Email) -> Optional[User]:
         stmt = select(UserModel).where(UserModel.email == str(email))
         result = await self._session.execute(stmt)
         user_model = result.scalar_one_or_none()
+        return user_model.to_entity() if user_model else None
 
-        if user_model and password.verify(user_model.password): # Assume que Password VO tem um método verify()
-            # self._current_user = user_model.to_entity() # Se _current_user for UserPublic
-            return user_model.to_entity()
-        return None
-
-    async def get_current_user(self) -> Optional[UserPublic]: # Exemplo: Retorne UserPublic
-        return self._current_user
-
-    async def set_current_user(self, user: UserPublic) -> None: # Exemplo: Aceite UserPublic
-        self._current_user = user
-
-    async def logout(self) -> None:
-        self._current_user = None
+    async def get_by_id(self, id: str) -> Optional[User]:
+        stmt = select(UserModel).where(UserModel.id == str(id))
+        result = await self._session.execute(stmt)
+        user_model = result.scalar_one_or_none()
+        return user_model.to_entity() if user_model else None
+    
+    async def update(self, user):
+        return super().update(user)
+    
+    

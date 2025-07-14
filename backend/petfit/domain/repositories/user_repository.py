@@ -4,6 +4,7 @@ from petfit.domain.value_objects.email_vo import Email      # ADICIONADO: para t
 from petfit.domain.value_objects.password import Password  # ADICIONADO: para tipagem correta no login
 from typing import Optional
 
+
 class UserRepository(ABC):
     @abstractmethod
     # Retorno Optional[User] e tipos Email/Password para consistência com InMemory
@@ -32,7 +33,9 @@ class UserRepository(ABC):
     def update(self, user: User) -> Optional[User]:
         pass
 
+
     @abstractmethod
-    # NOVO MÉTODO: Adicionado para ser implementado pelo InMemoryUserRepository e usado nos testes
-    def get_by_id(self, user_id: str) -> Optional[User]:
-        pass
+    async def get_by_email(self, email: Email) -> Optional[User]: ...
+
+    @abstractmethod
+    async def get_by_id(self, id: str) -> Optional[User]: ...

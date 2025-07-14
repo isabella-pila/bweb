@@ -11,20 +11,6 @@ class SQLAlchemyRecipeRepository(RecipeRepository):
     def __init__(self, session: AsyncSession):
         self._session = session
 
-    async def get_all(self) -> List[Recipe]:
-        result = await self._session.execute(
-            select(RecipeModel).options(joinedload(RecipeModel.user_id))
-        )
-        return [recipe.to_entity() for recipe in result.unique().scalars().all()]
-
-    async def get_by_id(self, recipe_id: str) -> Optional[Recipe]:
-        result = await self._session.execute(
-            select(RecipeModel)
-            .options(joinedload(RecipeModel.user_id))
-            .where(RecipeModel.id == recipe_id)
-        )
-        recipe = result.unique().scalar_one_or_none()
-        return recipe.to_entity() if recipe else None
 
     async def create(self, recipe: Recipe) -> Recipe:
         db_recipe = RecipeModel.from_entity(recipe)
