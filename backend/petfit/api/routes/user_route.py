@@ -10,7 +10,7 @@ from petfit.domain.value_objects.password import Password, PasswordValidationErr
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from petfit.api.deps import get_db_session, get_user_repository, get_current_user
-from petfit.infra.repositories.sqlalchemy.sqlalchemy_user_repository import (
+from petfit.infra.repositories.sqlalchemy.sqlachemy_user_repository import (
     SQLAlchemyUserRepository,
 )
 
@@ -117,6 +117,8 @@ async def logout_user(
     description="Retorna os dados do usuário atual.",
 )
 async def get_current_user():
+    user: User = Depends(get_current_user),
+    user_repo: UserRepository = Depends(get_user_repository),
     try:
         usecase = GetCurrentUserUseCase(user_repo)
         result = usecase.execute()
