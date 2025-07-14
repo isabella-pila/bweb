@@ -10,9 +10,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from petfit.infra.database import Base # <--- Ajuste seu caminho aqui!
-#from petfit.infra.models.comment_model import CommentModel # <--- Ajuste seu caminho aqui!
-#from petfit.infra.models.post_model import PostModel # <--- Ajuste seu caminho aqui! 
 from petfit.infra.models.user_model import UserModel # <--- Ajuste seu caminho aqui!
+from petfit.infra.models.recipe_model import RecipeModel 
 
 config = context.config
 if config.config_file_name is not None:

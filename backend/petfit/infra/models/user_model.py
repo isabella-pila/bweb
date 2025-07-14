@@ -11,7 +11,7 @@ class UserModel(Base):
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False) # Armazena o HASH da senha como STRING
+    password = Column(String, nullable=False) 
 
     @classmethod
     def from_entity(cls, user_entity: User):
@@ -19,16 +19,15 @@ class UserModel(Base):
         return cls(
             id=user_entity.id,
             name=user_entity.name,
-            email=str(user_entity.email), # Converte Email VO para string para armazenar
-            password=str(user_entity.password.value()) # Converte Password VO para string (hash)
+            email=str(user_entity.email),
+            password=str(user_entity.password.value()) 
         )
 
-    def to_entity(self) -> UserPublic: # <-- ALVO DO PROBLEMA! Mude o retorno para UserPublic
+    def to_entity(self) -> UserPublic: 
         """Converte um modelo UserModel para uma entidade UserPublic."""
-        # AQUI ESTÁ A CHAVE: Não inclua a senha ao criar UserPublic!
+       
         return UserPublic(
             id=self.id,
             name=self.name,
-            email=Email(self.email) # Recria o Email VO a partir da string do DB
-            # NÃO INCLUA 'password=Password(self.password)' AQUI!
+            email=Email(self.email) #
         )

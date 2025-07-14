@@ -67,7 +67,7 @@ async def read_root():
 # --- Rotas para Usuários ---
 
 @app.post("/users/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register_user_route( # Renomeado para evitar conflito com RegisterUserUseCase
+async def register_user_route( 
     user_data: UserRegisterRequest,
     repo: Annotated[UserRepository, Depends(get_user_repository)]
 ):
@@ -75,13 +75,13 @@ async def register_user_route( # Renomeado para evitar conflito com RegisterUser
     Registra um novo usuário no sistema.
     """
     new_user = User(
-        id=str(uuid.uuid4()), # Gerar ID aqui ou no use case/repositório
+        id=str(uuid.uuid4()),
         name=user_data.name,
-        email=user_data.email, # Já é um VO Email aqui
-        password=user_data.password, # Já é um VO Password aqui
+        email=user_data.email,
+        password=user_data.password, 
     )
     
-    usecase = RegisterUserUseCase(repo)
+    usecase =  RegisterUserUseCase(repo)
     registered_user = usecase.execute(new_user)
 
     if not registered_user:
@@ -92,7 +92,7 @@ async def register_user_route( # Renomeado para evitar conflito com RegisterUser
     return registered_user
 
 @app.post("/users/login", response_model=UserResponse)
-async def login_user_route( # Renomeado para evitar conflito
+async def login_user_route( 
     credentials: UserLoginRequest,
     repo: Annotated[UserRepository, Depends(get_user_repository)]
 ):
@@ -110,7 +110,7 @@ async def login_user_route( # Renomeado para evitar conflito
     return logged_in_user
 
 @app.post("/users/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout_user_route( # Renomeado para evitar conflito
+async def logout_user_route(
     repo: Annotated[UserRepository, Depends(get_user_repository)]
 ):
     """
@@ -118,10 +118,10 @@ async def logout_user_route( # Renomeado para evitar conflito
     """
     usecase = LogoutUserUseCase(repo)
     usecase.execute()
-    # Não há retorno de conteúdo para 204 No Content
+
 
 @app.get("/users/current", response_model=Optional[UserResponse])
-async def get_current_user_route( # Renomeado para evitar conflito
+async def get_current_user_route( 
     repo: Annotated[UserRepository, Depends(get_user_repository)]
 ):
     """
@@ -166,7 +166,7 @@ async def update_user_route( # Renomeado para evitar conflito
 
     if not updated_result:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, # Ou 400 Bad Request
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update user."
         )
     return updated_result

@@ -99,7 +99,7 @@ def test_update_user():
         id=user.id,
         name="pila",
         email=user.email,       # <--- Adicionado
-        password=user.password         # <--- Adicionado (se 'role' for obrigatório)
+        password=user.password         
     )
 
     usecase = UpdateUserUseCase(repo)

@@ -3,6 +3,9 @@ from pydantic import GetCoreSchemaHandler
 from pydantic_core import CoreSchema, core_schema
 from typing import Self # Necessário para type hinting do retorno do validador
 
+class PasswordValidationError(Exception):
+    pass
+
 class Password:
     def __init__(self, value: str):
         if not self._is_valid(value):
@@ -12,8 +15,6 @@ class Password:
     def _is_valid(self, password: str) -> bool:
         return len(password) >= 8 and any(c.isalpha() for c in password) and any(c.isdigit() for c in password)
 
-    # Alterado para 'get_value' ou manter como 'value' mas com parênteses na chamada
-    # Manter como 'value()' para consistência com o que você já tinha se for um método
     def value(self) -> str:
         return self._value
 
@@ -25,8 +26,7 @@ class Password:
         return NotImplemented
 
     def __str__(self) -> str:
-        # Nota: Pydantic usará __get_pydantic_core_schema__ para serialização em JSON,
-        # mas str() ainda é útil para depuração e outras impressões.
+        
         return "*" * len(self._value)
 
     def __hash__(self) -> int: # Adicionado: Bom ter __hash__ se você define __eq__

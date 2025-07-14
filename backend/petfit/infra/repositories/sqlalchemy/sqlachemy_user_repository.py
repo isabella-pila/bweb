@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from petfit.domain.entities.user import User
+from petfit.domain.entities.user_public import UserPublic
 from petfit.domain.repositories.user_repository import UserRepository
 from petfit.domain.value_objects.email_vo import Email
 from petfit.domain.value_objects.password import Password
