@@ -1,17 +1,17 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Literal
 from petfit.domain.entities.user import User
-
+from petfit.domain.value_objects.password import Password
 
 class RegisterUserInput(BaseModel):
     name: str = Field(..., min_length=3, max_length=50, description="Nome do usuário")
     email: EmailStr = Field(..., description="Email do usuário")
-    password: str = Field(..., min_length=8, description="Senha do usuário")
+    password: Password = Field(..., description="Senha do usuário") 
 
 
 class LoginUserInput(BaseModel):
     email: EmailStr = Field(..., description="Email do usuário")
-    password: str = Field(..., min_length=8, description="Senha do usuário")
+    password: str = Field(..., min_length=8, description="Senha do usuário") # <-- Mude para `str` aqui!
 
 
 class SetCurrentUserInput(BaseModel):

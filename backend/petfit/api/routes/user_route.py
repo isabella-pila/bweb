@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status # Importe status para usar HTTP_201_CREATED
 from petfit.usecases.user.register_user import RegisterUserUseCase
 from petfit.usecases.user.login_user import LoginUserUseCase
 from petfit.usecases.user.logout_user import LogoutUserUseCase
@@ -37,6 +37,7 @@ router = APIRouter()
     response_model=MessageOutput,
     summary="Registrar novo usuário",
     description="Cria um novo usuário com nome, email e senha forte.",
+    status_code=status.HTTP_201_CREATED # Boa prática para criação
 )
 async def register_user(
     data: RegisterUserInput, db: AsyncSession = Depends(get_db_session)
@@ -48,17 +49,21 @@ async def register_user(
             id=str(uuid.uuid4()),
             name=data.name,
             email=Email(data.email),
-            password=Password(data.password),
-        
+            password=data.password, # <--- CORRIGIDO: Use o objeto Password já validado pelo Pydantic
         )
         await usecase.execute(user)
         return MessageOutput(
-            message="User registered successfully"  # , user=UserOutput.from_entity(result)
+            message="User registered successfully"
         )
     except PasswordValidationError as p:
         raise HTTPException(status_code=400, detail=str(p))
     except ValueError as e:
+        # Captura outros ValueErrors, como "User with this email already exists"
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        # Um catch-all para erros inesperados
+        print(f"Erro inesperado no registro: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
 
 # ----------------------
@@ -78,7 +83,39 @@ async def login_user(
 ):
     try:
         usecase = LoginUserUseCase(user_repo)
-        user = await usecase.execute(Email(data.email), Password(data.password))
+        # O Pydantic já validou data.password para ser um Password object.
+        # Mas para a verificação de login, você precisa da senha em texto CLARO
+        # para que o bcrypt.checkpw possa funcionar.
+        #
+        # O data.password agora é um objeto Password *com o hash dentro*.
+        # Você PRECISA do valor em texto CLARO que veio na requisição para verificar.
+        #
+        # Solução: Use o `data.password` original da Pydantic request body,
+        # MAS seu LoginUserUseCase e Password.verify precisam ser ajustados
+        # para usar o valor em texto claro da entrada.
+
+        # *** REVISÃO CRÍTICA AQUI ***
+        # Se LoginUserInput.password é `Password`, o Pydantic vai hashá-la *antes* de chegar aqui.
+        # Isso não é o que você quer para login, você quer a senha em texto claro.
+        #
+        # Em LoginUserInput, a `password` DEVE ser `str`, e você vai hasheá-la (ou verificá-la) *manualmente*.
+        #
+        # Então, o `LoginUserInput` deveria ser assim:
+        # class LoginUserInput(BaseModel):
+        #     email: EmailStr
+        #     password: str # <--- STRING AQUI PARA LOGIN!
+
+        # Com a modificação acima, o código de login ficaria assim:
+        # user = await usecase.execute(Email(data.email), data.password) # Passa a string
+        # e o LoginUserUseCase vai chamar Password.verify(data.password) com a string
+
+        # Se você insistir em data.password ser um objeto Password com o hash,
+        # então seu LoginUserUseCase ou Password.verify precisarão de uma forma
+        # de acessar a senha original do input, o que é contraproducente.
+
+        # Assumindo que `LoginUserInput.password` foi alterado para `str`:
+        user = await usecase.execute(Email(data.email), data.password) # data.password é a string em texto claro
+
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         token = create_access_token(data={"sub": user.id})
@@ -87,8 +124,11 @@ async def login_user(
         )
     except PasswordValidationError as p:
         raise HTTPException(status_code=400, detail=str(p))
-    except ValueError as e:
+    except ValueError as e: # Pode ser "Invalid credentials" ou "User not found"
         raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        print(f"Erro inesperado no login: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
 
 # ----------------------
@@ -107,11 +147,11 @@ async def get_me_user(
     user: User = Depends(get_current_user),
 ):
     try:
-        return {
-            "id": user.id,
-            "name": user.name,
-            "email": str(user.email),
-            
-        }
+        # Se 'user' já é uma entidade User, você pode retorná-la diretamente
+        # ou usar UserOutput.from_entity(user)
+        return UserOutput.from_entity(user)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        print(f"Erro inesperado ao obter usuário atual: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")

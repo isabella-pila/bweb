@@ -15,7 +15,7 @@ class UserModel(Base):
     )
     name: Mapped[str] = mapped_column(sa.String, nullable=False)
     email: Mapped[str] = mapped_column(sa.String, unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(sa.String, nullable=False)
+    password: Mapped[str] = mapped_column(sa.String, nullable=False) 
     
     @classmethod
     def from_entity(cls, entity: User) -> "UserModel":
@@ -23,8 +23,7 @@ class UserModel(Base):
             id=entity.id,
             name=entity.name,
             email=str(entity.email),
-            password=str(entity.password),
-            
+            password=entity.password.hashed_value(), # Use o método para obter o hash
         )
 
     def to_entity(self) -> User:
@@ -32,6 +31,5 @@ class UserModel(Base):
             id=self.id,
             name=self.name,
             email=Email(self.email),
-            password=Password(self.password),
-            
+            password=Password(self.password, hashed=True), # Indique que já é um hash
         )
