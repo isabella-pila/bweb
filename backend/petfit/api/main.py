@@ -1,5 +1,7 @@
+# petfit/main.py
+
 from fastapi import FastAPI
-from fastapi.security import HTTPBearer
+# REMOVER ESTA LINHA: from fastapi.security import HTTPBearer # <--- ESTA LINHA CAUSA O PROBLEMA
 from petfit.api.routes import recipe_route, user_route
 from petfit.api.openapi_tags import openapi_tags
 from fastapi.middleware.cors import CORSMiddleware

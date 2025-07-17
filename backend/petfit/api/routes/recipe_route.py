@@ -1,12 +1,13 @@
 # petfit/api/routes/recipe_route.py
 
-from fastapi import APIRouter, HTTPException, Depends, status, Path, Body # <-- Importar Body
+from fastapi import APIRouter, HTTPException, Depends, status, Path, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from petfit.domain.entities.user import User
 from petfit.domain.entities.recipe import Recipe 
-from petfit.api.deps import get_db_session, get_recipe_repository, get_current_user
+# Importe get_current_user e security_bearer do deps.py
+from petfit.api.deps import get_db_session, get_recipe_repository, get_current_user, security_bearer # <-- ADICIONADO security_bearer
 from petfit.domain.repositories.recipe_repository import RecipeRepository
 
 from petfit.api.schemas.recipe_schema import (
@@ -15,6 +16,7 @@ from petfit.api.schemas.recipe_schema import (
     RecipeFavoriteResponse
 )
 from petfit.api.schemas.message_schema import MessageOutput 
+from fastapi.security import HTTPAuthorizationCredentials # <-- ADICIONADO para tipagem
 
 # Use cases
 from petfit.usecases.recipe.create_recipe import CreateRecipeUseCase
@@ -42,7 +44,7 @@ router = APIRouter()
     tags=["Recipes"]
 )
 async def create_recipe(
-    recipe_input: RecipeInput, # Esta ordem já está correta para POST com Body e Depends
+    recipe_input: RecipeInput, 
     db: AsyncSession = Depends(get_db_session),
 ):
     try:
@@ -123,10 +125,11 @@ async def get_recipe_by_id(
     description="Adiciona uma receita específica aos favoritos do usuário logado.",
     status_code=status.HTTP_200_OK, 
     tags=["Recipes", "Favorites"],
-    dependencies=[Depends(get_current_user)] 
+    # Removido: dependencies=[Depends(get_current_user)] 
 )
 async def add_recipe_to_favorites(
     recipe_id: str = Path(..., description="ID da receita a ser favoritada"),
+    credentials: HTTPAuthorizationCredentials = Depends(security_bearer), # <-- Adicionado aqui para consistência
     current_user: User = Depends(get_current_user), 
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -142,6 +145,8 @@ async def add_recipe_to_favorites(
             raise HTTPException(status_code=400, detail="Recipe is already in favorites or not found.")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) 
+    except HTTPException as e: 
+        raise e 
     except Exception as e:
         print(f"Erro inesperado ao adicionar receita aos favoritos: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
@@ -157,13 +162,15 @@ async def add_recipe_to_favorites(
     description="Remove uma receita específica dos favoritos do usuário logado.",
     status_code=status.HTTP_200_OK,
     tags=["Recipes", "Favorites"],
-    dependencies=[Depends(get_current_user)] 
+    # Removido: dependencies=[Depends(get_current_user)] 
 )
 async def remove_recipe_from_favorites(
     recipe_id: str = Path(..., description="ID da receita a ser removida dos favoritos"),
+    credentials: HTTPAuthorizationCredentials = Depends(security_bearer), # <-- Adicionado aqui
     current_user: User = Depends(get_current_user), 
     db: AsyncSession = Depends(get_db_session),
 ):
+    print(f"DEBUG: current_user ID in remove_recipe_from_favorites: {current_user.id if current_user else 'None'} Type: {type(current_user)}")
     try:
         recipe_repo = await get_recipe_repository(db)
         usecase = RemoveFavoriteRecipeUseCase(recipe_repo)
@@ -175,6 +182,8 @@ async def remove_recipe_from_favorites(
             raise HTTPException(status_code=400, detail="Recipe is not in favorites or not found.")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) 
+    except HTTPException as e:
+        raise e
     except Exception as e:
         print(f"Erro inesperado ao remover receita dos favoritos: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
@@ -189,17 +198,21 @@ async def remove_recipe_from_favorites(
     summary="Listar receitas favoritas do usuário logado",
     description="Retorna uma lista das receitas favoritas do usuário atualmente logado.",
     tags=["Users", "Favorites"],
-    dependencies=[Depends(get_current_user)] 
+    # Removido: dependencies=[Depends(get_current_user)] 
 )
 async def get_my_favorite_recipes(
+    credentials: HTTPAuthorizationCredentials = Depends(security_bearer), # <-- Adicionado aqui
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
+    print(f"DEBUG: current_user ID in get_my_favorite_recipes: {current_user.id if current_user else 'None'} Type: {type(current_user)}")
     try:
         recipe_repo = await get_recipe_repository(db)
         usecase = GetUserFavoriteRecipesUseCase(recipe_repo)
         favorite_recipes = await usecase.execute(current_user)
         return [RecipeOutput.from_entity(r) for r in favorite_recipes]
+    except HTTPException as e:
+        raise e
     except Exception as e:
         print(f"Erro inesperado ao listar favoritos do usuário: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
@@ -213,14 +226,16 @@ async def get_my_favorite_recipes(
     summary="Atualizar receita",
     description="Atualiza uma receita existente pelo seu ID. Requer autenticação.",
     tags=["Recipes"],
-    dependencies=[Depends(get_current_user)] 
+    # Removido: dependencies=[Depends(get_current_user)] 
 )
 async def update_recipe_endpoint(
     recipe_id: str = Path(..., description="ID da receita a ser atualizada"),
-    recipe_input: RecipeInput = Body(..., description="Dados da receita para atualização"), # <-- MUDANÇA AQUI!
+    recipe_input: RecipeInput = Body(..., description="Dados da receita para atualização"),
+    credentials: HTTPAuthorizationCredentials = Depends(security_bearer), # <-- Adicionado aqui
     current_user: User = Depends(get_current_user), 
     db: AsyncSession = Depends(get_db_session),
 ):
+    print(f"DEBUG: current_user ID in update_recipe_endpoint: {current_user.id if current_user else 'None'} Type: {type(current_user)}")
     try:
         recipe_repo = await get_recipe_repository(db)
         usecase = UpdateRecipeUseCase(recipe_repo)
@@ -240,6 +255,8 @@ async def update_recipe_endpoint(
         return RecipeOutput.from_entity(updated_recipe)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException as e:
+        raise e
     except Exception as e:
         print(f"Erro inesperado ao atualizar receita: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
@@ -253,14 +270,15 @@ async def update_recipe_endpoint(
     summary="Deletar receita",
     description="Deleta uma receita existente pelo seu ID. Requer autenticação.",
     tags=["Recipes"],
-    dependencies=[Depends(get_current_user)] 
+    # Removido: dependencies=[Depends(get_current_user)] 
 )
 async def delete_recipe_endpoint(
     recipe_id: str = Path(..., description="ID da receita a ser deletada"),
-    # Não há Body aqui, então a ordem já está correta com Path primeiro
+    credentials: HTTPAuthorizationCredentials = Depends(security_bearer), # <-- Adicionado aqui
     current_user: User = Depends(get_current_user), 
     db: AsyncSession = Depends(get_db_session),
 ):
+    print(f"DEBUG: current_user ID in delete_recipe_endpoint: {current_user.id if current_user else 'None'} Type: {type(current_user)}")
     try:
         recipe_repo = await get_recipe_repository(db)
         usecase = DeleteRecipeUseCase(recipe_repo)
@@ -270,6 +288,8 @@ async def delete_recipe_endpoint(
             return MessageOutput(message="Recipe deleted successfully.")
         else:
             raise HTTPException(status_code=404, detail="Recipe not found.")
+    except HTTPException as e:
+        raise e
     except Exception as e:
         print(f"Erro inesperado ao deletar receita: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
