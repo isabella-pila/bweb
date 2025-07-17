@@ -24,15 +24,13 @@ class SQLAlchemyUserRepository(UserRepository):
         user.id = model.id
         return model.to_entity()
 
-    async def login(self, email: Email, password: Password) -> Optional[User]:
-        stmt = select(UserModel).where(UserModel.email == str(email))
-        result = await self._session.execute(stmt)
-        user = result.scalar_one_or_none()
+    async def login(self, email: Email) -> Optional[User]: # Remova o argumento 'password' aqui
+            stmt = select(UserModel).where(UserModel.email == str(email))
+            result = await self._session.execute(stmt)
+            user_model = result.scalar_one_or_none()
 
-        if user and password.verify(user.password):
-            self._current_user = user.to_entity()
-            return self._current_user
-        return None
+            # Retorna a entidade User para o UseCase verificar a senha
+            return user_model.to_entity() if user_model else None
 
     async def get_current_user(self) -> Optional[User]:
         if self._current_user is None:

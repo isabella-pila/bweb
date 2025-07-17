@@ -1,55 +1,31 @@
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Any
-from datetime import datetime
-from petfit.domain.entities.recipe import Recipe
+# petfit/api/schemas/recipe_schema.py
 
+from pydantic import BaseModel, Field
+from typing import List, Optional
 
-class RecipeCreateInput(BaseModel):
-    title: str = Field(..., min_length=3, max_length=200, description="Título da Receita")
-    instructions: str = Field(
-        ..., min_length=10, max_length=300, description="Descrição da receita"
-    )
-    ingredients: str = Field(..., min_length=20, description="Conteúdo da receita")
-    
-
-
-class RecipeUpdateInput(BaseModel):
-    title: str = Field(..., min_length=3, max_length=200, description="Título da receita")
-    instructions: str = Field(
-        ..., min_length=10, max_length=300, description="Descrição da receita"
-    )
-    ingredients: str = Field(..., min_length=20, description="Conteúdo da receita")
-
+class RecipeInput(BaseModel):
+    title: str = Field(..., min_length=3, max_length=100, description="Título da receita")
+    ingredients: List[str] = Field(..., min_items=1, description="Lista de ingredientes")
+    instructions: List[str] = Field(..., min_items=1, description="Lista de instruções")
+    is_public: bool = Field(True, description="Indica se a receita é pública")
 
 class RecipeOutput(BaseModel):
     id: str = Field(..., description="ID da receita")
-    title: str = Field(..., min_length=3, max_length=100, description="Título da receita")
-    instructions: str = Field(
-        ..., min_length=10, max_length=300, description="Descrição da receita"
-    )
-    ingredients: str = Field(..., min_length=20, description="Conteúdo da receita")
-    
+    title: str = Field(..., description="Título da receita")
+    ingredients: List[str] = Field(..., description="Lista de ingredientes")
+    instructions: List[str] = Field(..., description="Lista de instruções")
+    is_public: bool = Field(..., description="Indica se a receita é pública")
 
     @classmethod
     def from_entity(cls, recipe):
         return cls(
             id=recipe.id,
             title=recipe.title,
-            instructions=recipe.instructions,
             ingredients=recipe.ingredients,
+            instructions=recipe.instructions,
+            is_public=recipe.is_public,
         )
 
-
-
-def recipe_to_output(recipe: Recipe) -> RecipeOutput:
-        return RecipeOutput(
-        id=recipe.id,
-        title=recipe.title,
-        ingredients=recipe.ingredients,
-        instructions=recipe.instructions,
-        
-    )
-
-
-def recipes_to_output(recipes: list[Recipe]) -> list[RecipeOutput]:
-        return [recipe_to_output(recipe) for recipe in recipes] 
+class RecipeFavoriteResponse(BaseModel):
+    message: str
+    recipe_id: str
