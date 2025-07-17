@@ -7,7 +7,7 @@ from petfit.domain.entities.recipe import Recipe
 import uuid
 from typing import List, Optional
 from petfit.infra.models.recipe_user_model import user_favorite_recipes_table # <--- ADICIONE ESTA LINHA
-
+from petfit.infra.models.user_model import UserModel
 
 
 class RecipeModel(Base):

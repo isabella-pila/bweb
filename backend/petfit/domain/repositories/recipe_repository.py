@@ -17,7 +17,7 @@ class RecipeRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all_public_recipes(self) -> List[Recipe]:
+    async def get_all_public_recipes(self) -> Recipe:
         """Obtém todas as receitas públicas."""
         pass
 

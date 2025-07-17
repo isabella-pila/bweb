@@ -5,8 +5,8 @@ class Recipe:
         self,
         id: str,
         title: str,
-        ingredients: List[str],
-        instructions: List[str],
+        ingredients: str,
+        instructions: str,
         is_public: bool = True,
     
     ):
