@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copia o restante do projeto
-COPY . .
+COPY ./backend .
 
 EXPOSE 8080
 
